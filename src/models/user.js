@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const Task = require("./post");
+const Post = require("./post");
 const { throwError, GenericError } = require("../../utils/LoggerUtils");
 require("dotenv").config();
 // Hash the password
@@ -47,12 +47,27 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    location: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+    },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      minlength: 5
+    }
   },
   {
     // aggiungerà automaticamente due campi al documento: createdAt e updatedAt. 
     // Questi campi conterranno la data e l'ora della creazione e dell'ultima modifica del documento.
     timestamps: true,
-  }
+  },
+
 );
 
 userSchema.virtual("posts", {
@@ -81,9 +96,9 @@ userSchema.methods.generateJWT = async function () {
   return token;
 };
 
-userSchema.statics.findByCredentials = async (email, password) => {
+userSchema.statics.findByCredentials = async (username, password) => {
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ username });
     if (!user) {
       return throwError("Credentials error");
     }
@@ -109,7 +124,7 @@ userSchema.pre("save", async function (next) {
 
 userSchema.pre("remove", async function (next) {
   const user = this;
-  await Task.deleteMany({ user: user._id });
+  await Post.deleteMany({ user: user._id });
   next();
 });
 

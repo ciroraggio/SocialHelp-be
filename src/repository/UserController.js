@@ -24,12 +24,15 @@ const upload = multer({
 router.post("/login", async (req, res) => {
   try {
     const user = await User.findByCredentials(
-      req.body.email,
+      req.body.username,
       req.body.password
     );
-    const token = await user.generateJWT();
-    res.send({ user, token });
-    GenericSuccess(`POST /login user: ${user.email}`);
+    if(user){
+      const token = await user.generateJWT();
+      res.send({ user, token });
+      return GenericSuccess(`POST /login user: ${user.username}: ${user.email}`);
+    }
+    throwError("User not found")
   } catch (error) {
     res.status(400).send(error);
     GenericError(`POST /login  ${error}`);
