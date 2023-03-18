@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    surname: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     profilePicture: {
       type: Buffer,
     },
@@ -60,7 +65,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       minlength: 5
-    }
+    },
+    following: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }]
   },
   {
     // aggiungerà automaticamente due campi al documento: createdAt e updatedAt. 

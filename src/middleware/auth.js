@@ -16,11 +16,11 @@ const auth = async (req, res, next) => {
     }
     req.token = token
     req.user = user
-    GenericSuccess('Auth ok')
+    // GenericSuccess(`${user.email} auth verified!`)
     next();
   } catch (error) {
     res.status(404).send({ error: "Authentication failed." });
-    GenericError(`auth  ${error}`);
+    GenericError(`auth error  ${error}`);
   }
 };
 

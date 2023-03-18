@@ -27,12 +27,14 @@ router.post("/login", async (req, res) => {
       req.body.username,
       req.body.password
     );
-    if(user){
+    if (user) {
       const token = await user.generateJWT();
       res.send({ user, token });
-      return GenericSuccess(`POST /login user: ${user.username}: ${user.email}`);
+      return GenericSuccess(
+        `POST /login user: ${user.username} - ${user.email}`
+      );
     }
-    throwError("User not found")
+    throwError("User not found");
   } catch (error) {
     res.status(400).send(error);
     GenericError(`POST /login  ${error}`);
@@ -46,7 +48,7 @@ router.post("/logout", auth, async (req, res) => {
     );
     await req.user.save();
     res.send();
-    GenericSuccess(`POST /logout`);
+    GenericSuccess(`POST /logout user disconnected: ${req.user.email}`);
   } catch (error) {
     res.status(500).send(error);
     GenericError(`POST /logout  ${error}`);
@@ -65,11 +67,32 @@ router.post("/logoutAll", auth, async (req, res) => {
   }
 });
 
+router.get("/user/getAllUsers", auth, async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.status(200).send(
+      users.map((user) => {
+        return {
+          id: user._id,
+          name: user.name,
+          surname: user.surname,
+          location: user.location,
+          username: user.username,
+          following: user.following,
+        };
+      })
+    );
+    // GenericSuccess(`GET /getAllUsers`);
+  } catch (error) {
+    res.status(400).send(error);
+    GenericError(`GET /getAllUsers  ${error}`);
+  }
+});
+
 //create user
 router.post("/user/createUser", async (req, res) => {
   const user = new User(req.body);
   try {
-    
     await user.save();
     const token = user.generateJWT();
     res.status(201).send({ user, token });
@@ -94,7 +117,14 @@ router.get("/user/getCurrentUser", auth, async (req, res) => {
 //get user in session and update it
 router.put("/user/updateCurrentUser", auth, async (req, res) => {
   const toUpdate = Object.keys(req.body);
-  const canUpdate = ["name", "age", "email", "password"];
+  const canUpdate = [
+    "name",
+    "surname",
+    "email",
+    "password",
+    "phone",
+    "location",
+  ];
   const isValid = toUpdate.every((fieldToUpdate) =>
     canUpdate.includes(fieldToUpdate)
   );
@@ -169,6 +199,49 @@ router.delete("/user/deleteProfilePicture", auth, async (req, res) => {
   await req.user.save();
   res.send();
   GenericSuccess(" DELETE /user/deleteProfilePicture");
+});
+
+// Aggiunge un utente alla lista following
+router.post("/user/follow", auth, async (req, res) => {
+  try {
+    const user = req.user;
+    const followingId = req.body.followingId;
+    if (!user || !followingId) {
+      return res.status(404).send({ error: "User not found" });
+    }
+    if (user.following.includes(followingId)) {
+      return res.status(400).send({ error: "User already followed" });
+    }
+    user.following.push(followingId);
+    await user.save();
+    res.status(200).send({ message: "User followed" });
+    GenericSuccess("POST /user/follow");
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+    GenericError(`POST /user/follow ${error.message}`);
+  }
+});
+
+// Rimuove un utente dalla lista following
+router.post("/user/removeFollow", auth, async (req, res) => {
+  try {
+    const followingId = req.body.followingId;
+    if (!req.user || !followingId) {
+      return res.status(404).send({ error: "User not found" });
+    }
+    if (!req.user.following.includes(followingId)) {
+      return res.status(400).send({ error: "User not followed" });
+    }
+    req.user.following = req.user.following.filter(
+      (id) => id.toString() !== followingId
+    );
+    await req.user.save();
+    res.status(200).send({ message: "User unfollowed" });
+    GenericSuccess("POST /user/removeFollow");
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+    GenericError(`POST /user/removeFollow ${error.message}`);
+  }
 });
 
 module.exports = router;

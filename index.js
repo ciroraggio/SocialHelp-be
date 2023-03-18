@@ -1,12 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 const { GenericSuccess } = require("./utils/LoggerUtils");
-const app = express();
 const port = process.env.PORT || 3001;
 const userController = require("./src/repository/UserController");
 const postController = require("./src/repository/PostController");
 require("./src/db/mongoose");
 require("dotenv").config();
+
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT'],
+  optionsSuccessStatus: 200
+};
 
 const maintenanceMode = async (res) => {
   const allMethods = ["GET", "POST", "PUT", "DELETE"];
@@ -14,16 +19,16 @@ const maintenanceMode = async (res) => {
     res.status(503).send("Server under maintenance");
   }
 };
-const corsOptions = {
-  origin: ["http://localhost:3000"],
-};
 
-// app.use(async (req, res, next) => {
+const app = express();
 
-// });
+app.use(express.json());
 
-app.use(express.json()).use(userController).use(postController);
 app.use(cors(corsOptions));
+
+app.use(userController).use(postController);
+
+
 app.listen(port, () => {
   GenericSuccess(`Server is up on port ${port}`);
 });
