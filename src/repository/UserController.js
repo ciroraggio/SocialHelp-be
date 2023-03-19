@@ -78,7 +78,7 @@ router.get("/user/getAllUsers", auth, async (req, res) => {
           surname: user.surname,
           location: user.location,
           username: user.username,
-          following: user.following,
+          following: user.following.filter(id => id.toString() !== user._id),
         };
       })
     );

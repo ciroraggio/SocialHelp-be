@@ -2,18 +2,22 @@ const express = require("express");
 const { GenericError, GenericSuccess } = require("../../utils/LoggerUtils");
 const auth = require("../middleware/auth");
 const Post = require("../models/post");
+const User = require("../models/user");
 const router = new express.Router();
 
 //create post
 router.post("/post/createPost", auth, async (req, res) => {
   try {
-    const post = new Post({
-      ...req.body,
-      user: req.user._id,
-    });
-    await post.save();
-    res.status(201).send(task);
-    GenericSuccess("POST /createPost");
+    if (req.body.description && req.body.location) {
+      const post = new Post({
+        ...req.body,
+        user: req.user._id,
+      });
+      await post.save();
+      res.status(201).send(post);
+      return GenericSuccess("POST /createPost");
+    }
+    throw new Error("Malformed body");
   } catch (error) {
     res.status(400).send(error);
     GenericError(`POST /createPost  ${error}`);
@@ -35,7 +39,7 @@ router.get("/post/getPostById/:id", auth, async (req, res) => {
   }
 });
 
-//get all posts
+//get all current user and following users posts
 router.get("/post/getAllPostsByUser", auth, async (req, res) => {
   try {
     const match = {};
@@ -53,7 +57,7 @@ router.get("/post/getAllPostsByUser", auth, async (req, res) => {
       options: {
         limit: parseInt(req.query.limit),
         skip: parseInt(req.query.skip),
-        sort
+        sort,
       },
     });
     res.send(req.user.posts);
@@ -61,6 +65,25 @@ router.get("/post/getAllPostsByUser", auth, async (req, res) => {
   } catch (error) {
     res.status(500).send(error);
     GenericError(`GET /getAllPostsByUser   ${error}`);
+  }
+});
+
+router.get("/post/getAllFeedPostsByUser", auth, async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const user = await User.findById(userId);
+    const following = user.following;
+
+    // Find all posts created by users the user is following and current user
+    const posts = await Post.find({
+      $or: [{ user: userId }, { user: { $in: following } }],
+    }).populate('user', ['name', 'surname', 'username']);;
+    res.send(posts);
+    GenericSuccess(`GET /getAllFeedPostsByUser`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error finding posts");
+    GenericError(`GET /getAllFeedPostsByUser   ${err}`);
   }
 });
 
