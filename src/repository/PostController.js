@@ -95,7 +95,7 @@ router.delete("/post/deletePostById/:id", auth, async (req, res) => {
     if (!post) {
       return res.status(404).send();
     }
-    res.send(post);
+    res.send(`Post deleted`);
     GenericSuccess(`DELETE /deletePostById  ${post}`);
   } catch (error) {
     res.status(500).send(error);
