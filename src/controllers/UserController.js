@@ -36,7 +36,7 @@ router.post("/login", async (req, res) => {
     }
     throwError("User not found");
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).json({message: error});
     GenericError(`POST /login  ${error}`);
   }
 });
@@ -50,7 +50,7 @@ router.post("/logout", auth, async (req, res) => {
     res.send();
     GenericSuccess(`POST /logout user disconnected: ${req.user.email}`);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({message: error});
     GenericError(`POST /logout  ${error}`);
   }
 });
@@ -62,7 +62,7 @@ router.post("/logoutAll", auth, async (req, res) => {
     res.send();
     GenericSuccess(`POST /logoutAll`);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({message: error});
     GenericError(`POST /logoutAll  ${error}`);
   }
 });
@@ -84,7 +84,7 @@ router.get("/user/getAllUsers", auth, async (req, res) => {
     );
     // GenericSuccess(`GET /getAllUsers`);
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).json({message: error});
     GenericError(`GET /getAllUsers  ${error}`);
   }
 });
@@ -98,7 +98,7 @@ router.post("/user/createUser", async (req, res) => {
     res.status(201).send({ user, token });
     GenericSuccess(`POST /createUser`);
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).json({message: error});
     GenericError(`POST /createUser  ${error}`);
   }
 });
@@ -109,7 +109,7 @@ router.get("/user/getCurrentUser", auth, async (req, res) => {
     res.send(req.user);
     GenericSuccess("GET /getCurrentUser");
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({message: error});
     GenericError(`GET /getCurrentUser  ${error}`);
   }
 });
@@ -142,7 +142,7 @@ router.put("/user/updateCurrentUser", auth, async (req, res) => {
     res.send(req.user);
     GenericSuccess(`PUT /updateCurrentUser`);
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).json({message: error});
     GenericError(`PUT /updateCurrentUser   ${error}`);
   }
 });
@@ -154,7 +154,7 @@ router.delete("/user/deleteCurrentUser", auth, async (req, res) => {
     res.send(req.user);
     GenericSuccess(`GET /deleteCurrentUser`);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({message: error});
     GenericError(`GET /deleteCurrentUser   ${error}`);
   }
 });

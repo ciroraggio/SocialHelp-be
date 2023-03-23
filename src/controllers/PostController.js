@@ -19,7 +19,7 @@ router.post("/post/createPost", auth, async (req, res) => {
     }
     throw new Error("Malformed body");
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).json({message: error});
     GenericError(`POST /createPost  ${error}`);
   }
 });
@@ -34,7 +34,7 @@ router.get("/post/getPostById/:id", auth, async (req, res) => {
     res.send(post);
     GenericSuccess(`GET /getPostById  ${post}`);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({message: error});
     GenericError(`GET /getPostById   ${error}`);
   }
 });
@@ -63,7 +63,7 @@ router.get("/post/getAllPostsByUser", auth, async (req, res) => {
     res.send(req.user.posts);
     GenericSuccess(`GET /getAllPostsByUser`);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({message: error});
     GenericError(`GET /getAllPostsByUser   ${error}`);
   }
 });
@@ -77,7 +77,9 @@ router.get("/post/getAllFeedPostsByUser", auth, async (req, res) => {
     // Find all posts created by users the user is following and current user
     const posts = await Post.find({
       $or: [{ user: userId }, { user: { $in: following } }],
-    }).populate('user', ['name', 'surname', 'username']);;
+    })
+      .populate("user", ["name", "surname", "username"])
+      .populate("proposedResolutions");
     res.send(posts);
     GenericSuccess(`GET /getAllFeedPostsByUser`);
   } catch (err) {
@@ -95,10 +97,10 @@ router.delete("/post/deletePostById/:id", auth, async (req, res) => {
     if (!post) {
       return res.status(404).send();
     }
-    res.send(`Post deleted`);
+    res.json({message: `Post deleted`});
     GenericSuccess(`DELETE /deletePostById  ${post}`);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({message: error});
     GenericError(`DELETE /deletePostById   ${error}`);
   }
 });
@@ -130,7 +132,7 @@ router.put("/post/updatePostById/:id", auth, async (req, res) => {
     res.send(post);
     GenericSuccess(`PUT /updatePostById`);
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).json({message: error});
     GenericError(`PUT /updatePostById   ${error}`);
   }
 });

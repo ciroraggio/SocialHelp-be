@@ -7,11 +7,7 @@ const postSchema = new mongoose.Schema(
     location: { type: String, required: true },
     imageUrl: { type: String },
     solved: { type: Boolean, default: false },
-    // resolver: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "User",
-    //   default: "",
-    // },
+    proposedResolutions: [{ type: mongoose.Schema.Types.ObjectId, ref: "ProposedResolution" }] // si riferisce agli id delle proposte fatte per il post
   },
   {
     // aggiungerà automaticamente due campi al documento: createdAt e updatedAt.
