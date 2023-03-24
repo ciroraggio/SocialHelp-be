@@ -8,10 +8,10 @@ const auth = require("../middleware/auth");
 
 router.post("/resolution/createResolution", auth, async (req, res) => {
   try {
-    const { text, user, post } = req.body;
+    const { description, user, post } = req.body;
 
     const proposedResolution = new ProposedResolution({
-      text,
+      description,
       user,
       post,
     });
@@ -31,6 +31,41 @@ router.post("/resolution/createResolution", auth, async (req, res) => {
     res.status(500).json({
       error: "An error occurred while creating the resolution",
     });
+  }
+});
+
+// get all resolution by user
+router.get("/resolution/getAllResolutionsByUser", auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const userPosts = await Post.find({ user: userId }).populate({
+      path: "proposedResolutions",
+      populate: [{ path: "user" }, { path: "post" }],
+    });
+    const proposedResolutions = userPosts.reduce(
+      (acc, post) => acc.concat(post.proposedResolutions),
+      []
+    );
+    const mappedResolutions = proposedResolutions.map((resolution) => ({
+      _id: resolution._id,
+      user: {
+        name: resolution.user.name,
+        surname: resolution.user.surname,
+        username: resolution.user.username,
+      },
+      post: {
+        _id: resolution.post._id,
+        description: resolution.post.description,
+        createdAt: resolution.post.createdAt,
+      },
+      resolved: resolution.status === "accepted",
+      description: resolution.description,
+    }));
+    GenericSuccess(`POST /getAllResolutionByUser`);
+    res.status(200).json({ resolutions: mappedResolutions });
+  } catch (err) {
+    GenericError(`POST /getAllResolutionByUser  ${err}`);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -66,7 +101,7 @@ router.delete(
 //get one resolution by id and update it
 router.put("/resolution/updateResolutionById/:id", auth, async (req, res) => {
   const toUpdate = Object.keys(req.body);
-  const canUpdate = ["text", "status"];
+  const canUpdate = ["description", "status"];
   const isValid = toUpdate.every((fieldToUpdate) =>
     canUpdate.includes(fieldToUpdate)
   );

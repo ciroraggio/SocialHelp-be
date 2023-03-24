@@ -1,10 +1,12 @@
 const express = require("express");
+
 const cors = require("cors");
 const { GenericSuccess } = require("./utils/LoggerUtils");
 const port = process.env.PORT || 3001;
 const userController = require("./src/controllers/UserController");
 const postController = require("./src/controllers/PostController");
 const proposedResolutionController = require("./src/controllers/ProposedResolutionController");
+
 require("./src/db/mongoose");
 require("dotenv").config();
 
