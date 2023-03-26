@@ -19,7 +19,7 @@ const auth = async (req, res, next) => {
     // GenericSuccess(`${user.email} auth verified!`)
     next();
   } catch (error) {
-    res.status(404).send({ error: "Authentication failed." });
+    res.status(401).send({ error: "Authentication failed." });
     GenericError(`auth error  ${error}`);
   }
 };
