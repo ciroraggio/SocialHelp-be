@@ -78,6 +78,7 @@ router.get("/user/getAllUsers", auth, async (req, res) => {
           surname: user.surname,
           location: user.location,
           username: user.username,
+          biography: user.biography,
           following: user.following.filter((id) => id.toString() !== user._id),
         };
       })
@@ -124,6 +125,7 @@ router.put("/user/updateCurrentUser", auth, async (req, res) => {
     "password",
     "phone",
     "location",
+    "biography"
   ];
   const isValid = toUpdate.every((fieldToUpdate) =>
     canUpdate.includes(fieldToUpdate)

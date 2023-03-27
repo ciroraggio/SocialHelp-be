@@ -18,6 +18,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    biography: {
+      type: String,
+      required: false,
+      maxlength: 400,
+    },
     profilePicture: {
       type: Buffer,
     },
