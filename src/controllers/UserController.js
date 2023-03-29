@@ -107,8 +107,15 @@ router.post("/user/createUser", async (req, res) => {
 //get user in session
 router.get("/user/getCurrentUser", auth, async (req, res) => {
   try {
-    res.send(req.user);
-    GenericSuccess("GET /getCurrentUser");
+    const user = await User.findById(
+      req.user._id
+    );
+    if (user) {
+      const token = await user.generateJWT();
+      res.send({ user, token });
+      return GenericSuccess("GET /getCurrentUser");
+    }
+    throwError("User not found");   
   } catch (error) {
     res.status(500).json({ message: error });
     GenericError(`GET /getCurrentUser  ${error}`);
