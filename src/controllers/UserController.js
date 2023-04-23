@@ -80,6 +80,7 @@ router.get("/user/getAllUsers", auth, async (req, res) => {
           username: user.username,
           biography: user.biography,
           following: user.following.filter((id) => id.toString() !== user._id),
+          verified: user.verified
         };
       })
     );

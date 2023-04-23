@@ -49,6 +49,10 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+    verified: {
+      type: Boolean,
+      required: false
+    },
     tokens: [
       {
         token: {

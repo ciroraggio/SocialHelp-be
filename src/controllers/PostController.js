@@ -78,7 +78,7 @@ router.get("/post/getAllFeedPostsByUser", auth, async (req, res) => {
     const posts = await Post.find({
       $or: [{ user: userId }, { user: { $in: following } }],
     })
-      .populate("user", ["name", "surname", "username"])
+      .populate("user", ["name", "surname", "username", "verified"])
       .populate("proposedResolutions");
     res.send(posts);
     GenericSuccess(`GET /getAllFeedPostsByUser`);

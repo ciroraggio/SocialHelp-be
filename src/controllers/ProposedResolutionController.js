@@ -52,6 +52,7 @@ router.get("/resolution/getAllResolutionsByUser", auth, async (req, res) => {
         name: resolution.user.name,
         surname: resolution.user.surname,
         username: resolution.user.username,
+        verified: resolution.user.verified
       },
       post: {
         _id: resolution.post._id,
