@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
       maxlength: 400,
     },
     profilePicture: {
-      type: Buffer,
+      type: String,
     },
     email: {
       type: String,
@@ -99,7 +99,7 @@ userSchema.methods.toJSON = function () {
   const userToSend = user.toObject();
   delete userToSend.password;
   delete userToSend.tokens;
-  delete userToSend.profilePicture;
+  // delete userToSend.profilePicture;
   return userToSend;
 };
 

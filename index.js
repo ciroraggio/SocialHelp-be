@@ -1,4 +1,5 @@
 const express = require("express");
+var bodyParser = require('body-parser'); 
 
 const cors = require("cors");
 const { GenericSuccess } = require("./utils/LoggerUtils");
@@ -19,11 +20,13 @@ const corsOptions = {
 const maintenanceMode = async (res) => {
   const allMethods = ["GET", "POST", "PUT", "DELETE"];
   if (allMethods.some((method) => method === req.method)) {
-    res.status(503).send("Server under maintenance");
+    res.status(503).send("SocialHelp server under maintenance");
   }
 };
 
 const app = express();
+app.use(bodyParser.json({ limit: '30mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '30mb' }));
 
 app.use(express.json());
 
@@ -32,5 +35,5 @@ app.use(cors(corsOptions));
 app.use(userController).use(postController).use(proposedResolutionController);
 
 app.listen(port, () => {
-  GenericSuccess(`Server is up on port ${port}`);
+  GenericSuccess(`SocialHelp server is up on port ${port}`);
 });

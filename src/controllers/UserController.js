@@ -80,7 +80,8 @@ router.get("/user/getAllUsers", auth, async (req, res) => {
           username: user.username,
           biography: user.biography,
           following: user.following.filter((id) => id.toString() !== user._id),
-          verified: user.verified
+          verified: user.verified,
+          profilePicture: user.profilePicture
         };
       })
     );
@@ -108,15 +109,13 @@ router.post("/user/createUser", async (req, res) => {
 //get user in session
 router.get("/user/getCurrentUser", auth, async (req, res) => {
   try {
-    const user = await User.findById(
-      req.user._id
-    );
+    const user = await User.findById(req.user._id);
     if (user) {
       const token = await user.generateJWT();
       res.send({ user, token });
       return GenericSuccess("GET /getCurrentUser");
     }
-    throwError("User not found");   
+    throwError("User not found");
   } catch (error) {
     res.status(500).json({ message: error });
     GenericError(`GET /getCurrentUser  ${error}`);
@@ -133,7 +132,7 @@ router.put("/user/updateCurrentUser", auth, async (req, res) => {
     "password",
     "phone",
     "location",
-    "biography"
+    "biography",
   ];
   const isValid = toUpdate.every((fieldToUpdate) =>
     canUpdate.includes(fieldToUpdate)
@@ -187,15 +186,10 @@ router.get("/user/getProfilePicture/:id", async (req, res) => {
 router.post(
   "/user/uploadProfilePicture",
   auth,
-  upload.single("picture"),
   async (req, res) => {
-    const bufferedImage = await sharp(req.file.buffer)
-      .resize({ width: 250, height: 250 })
-      .png()
-      .toBuffer();
-    req.user.profilePicture = bufferedImage;
+    req.user.profilePicture = req.body.data;
     await req.user.save();
-    res.send();
+    res.status(200).send({ message: "Profile picture updated" });
     GenericSuccess(" POST /user/uploadProfilePicture");
   },
   (error, req, res, next) => {
