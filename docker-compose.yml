@@ -1,0 +1,33 @@
+version: "3"
+services:
+  social-help-fe:
+    image: social-help-fe
+    stdin_open: true
+    ports:
+      - "3000:3000"
+    networks:
+      - social-help-app
+
+  social-help-be:
+    image: social-help-be
+    ports:
+      - "3001:3001"
+    networks:
+      - social-help-app
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:3.6.19-xenial
+    ports: 
+      - "27017:27017"
+    networks:
+      - social-help-app
+
+
+networks:
+  social-help-app:
+    driver: bridge
+volumes:
+  mongo-data:
+    driver: local
