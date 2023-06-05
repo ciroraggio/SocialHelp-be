@@ -20,7 +20,7 @@
 1. **If you have already built the SocialHelp container following the instructions from the SocialHelp repository**, compose the application by running the command (remember, you must be in the SocialHelp-be project folder):
 
     ```
-    docker compose up
+    docker compose -p socialhelp up
     ```
 
 2. Navigate to `localhost:3000` and start using SocialHelp, remember that initially the database will be empty, you will have to create users that will remain in the MongoDB volume until you delete the container.
