@@ -1,12 +1,8 @@
-const express = require("express");
-const { GenericError, GenericSuccess } = require("../../utils/LoggerUtils");
-const auth = require("../middleware/auth");
+const { GenericSuccess, GenericError } = require("../../utils/LoggerUtils");
 const Post = require("../models/post");
 const User = require("../models/user");
-const router = new express.Router();
 
-//create post
-router.post("/post/createPost", auth, async (req, res) => {
+exports.createPost = async (req, res) => {
   try {
     if (req.body.description && req.body.location) {
       const post = new Post({
@@ -22,10 +18,9 @@ router.post("/post/createPost", auth, async (req, res) => {
     res.status(400).json({ message: error });
     GenericError(`POST /createPost  ${error}`);
   }
-});
+};
 
-//get one post by id
-router.get("/post/getPostById/:id", auth, async (req, res) => {
+exports.getPostById = async (req, res) => {
   try {
     const post = await Post.findOne({ _id, user: req.user._id });
     if (!post) {
@@ -37,10 +32,9 @@ router.get("/post/getPostById/:id", auth, async (req, res) => {
     res.status(500).json({ message: error });
     GenericError(`GET /getPostById   ${error}`);
   }
-});
+};
 
-//get all current user and following users posts
-router.get("/post/getAllPostsByUser", auth, async (req, res) => {
+exports.getAllPostsByUser = async (req, res) => {
   try {
     const match = {};
     const sort = {};
@@ -66,9 +60,9 @@ router.get("/post/getAllPostsByUser", auth, async (req, res) => {
     res.status(500).json({ message: error });
     GenericError(`GET /getAllPostsByUser   ${error}`);
   }
-});
+};
 
-router.get("/post/getAllFeedPostsByUser", auth, async (req, res) => {
+exports.getAllFeedPostsByUser = async (req, res) => {
   const userId = req.user._id;
   try {
     const user = await User.findById(userId);
@@ -93,10 +87,9 @@ router.get("/post/getAllFeedPostsByUser", auth, async (req, res) => {
     res.status(500).send("Error finding posts");
     GenericError(`GET /getAllFeedPostsByUser   ${err}`);
   }
-});
+};
 
-//get one post by id and delete it
-router.delete("/post/deletePostById/:id", auth, async (req, res) => {
+exports.deletePostById = async (req, res) => {
   try {
     const _id = req.params.id;
     const post = await Post.findOneAndDelete({ _id, user: req.user._id });
@@ -109,10 +102,9 @@ router.delete("/post/deletePostById/:id", auth, async (req, res) => {
     res.status(500).json({ message: error });
     GenericError(`DELETE /deletePostById   ${error}`);
   }
-});
+};
 
-//get one post by id and update it
-router.put("/post/updatePostById/:id", auth, async (req, res) => {
+exports.updatePostById = async (req, res) => {
   const toUpdate = Object.keys(req.body);
   const canUpdate = ["text"];
   const isValid = toUpdate.every((fieldToUpdate) =>
@@ -141,6 +133,4 @@ router.put("/post/updatePostById/:id", auth, async (req, res) => {
     res.status(400).json({ message: error });
     GenericError(`PUT /updatePostById   ${error}`);
   }
-});
-
-module.exports = router;
+};

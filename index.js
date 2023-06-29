@@ -4,11 +4,11 @@ var bodyParser = require('body-parser');
 const cors = require("cors");
 const { GenericSuccess } = require("./utils/LoggerUtils");
 const port = process.env.PORT || 3001;
-const userController = require("./src/controllers/UserController");
-const postController = require("./src/controllers/PostController");
-const proposedResolutionController = require("./src/controllers/ProposedResolutionController");
+const userRoutes = require("./src/routes/UserRoutes");
+const postRoutes = require("./src/routes/PostRoutes");
+const proposedResolutionRoutes = require("./src/routes/ProposedResolutionRoutes");
 
-require("./src/db/mongoose");
+require("./src/db/config");
 require("dotenv").config();
 
 const corsOptions = {
@@ -32,7 +32,7 @@ app.use(express.json());
 
 app.use(cors(corsOptions));
 
-app.use(userController).use(postController).use(proposedResolutionController);
+app.use(userRoutes).use(postRoutes).use(proposedResolutionRoutes);
 
 app.listen(port, () => {
   GenericSuccess(`SocialHelp server is up on port ${port}`);

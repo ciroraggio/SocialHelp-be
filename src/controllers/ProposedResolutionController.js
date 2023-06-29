@@ -1,12 +1,8 @@
-// Import the necessary models and dependencies
-const express = require("express");
-const router = express.Router();
 const ProposedResolution = require("../models/proposedResolutions");
 const Post = require("../models/post");
 const { GenericSuccess, GenericError } = require("../../utils/LoggerUtils");
-const auth = require("../middleware/auth");
 
-router.post("/resolution/createResolution", auth, async (req, res) => {
+exports.createResolution = async (req, res) => {
   try {
     const { description, post } = req.body;
 
@@ -32,10 +28,9 @@ router.post("/resolution/createResolution", auth, async (req, res) => {
       error: "An error occurred while creating the resolution",
     });
   }
-});
+};
 
-// get all resolution by user
-router.get("/resolution/getAllResolutionsByUser", auth, async (req, res) => {
+exports.getAllResolutionByUser = async (req, res) => {
   try {
     const userId = req.user._id;
     const userPosts = await Post.find({ user: userId }).populate({
@@ -54,7 +49,7 @@ router.get("/resolution/getAllResolutionsByUser", auth, async (req, res) => {
         username: resolution.user.username,
         verified: resolution.user.verified,
         location: resolution.user.location,
-        profilePicture: resolution.user.profilePicture
+        profilePicture: resolution.user.profilePicture,
       },
       post: {
         _id: resolution.post._id,
@@ -70,39 +65,32 @@ router.get("/resolution/getAllResolutionsByUser", auth, async (req, res) => {
     GenericError(`POST /getAllResolutionByUser  ${err}`);
     res.status(500).json({ error: "Internal server error" });
   }
-});
+};
 
-// get one resolution by id and delete it
-// also delete proposed resolution id from the post
-router.delete(
-  "/resolution/deleteResolutionById/:id",
-  auth,
-  async (req, res) => {
-    try {
-      const _id = req.params.id;
-      const post = await Post.findOne({ proposedResolutions: _id });
-      if (!post) {
-        return res.status(404).send();
-      }
-      const update = { $pull: { proposedResolutions: _id } };
-      await post.updateOne(update);
-
-      const proposedResolution = await Post.findOneAndDelete({ _id });
-      if (!proposedResolution) {
-        return res.status(404).send();
-      }
-
-      res.send({ message: `Resolution deleted` });
-      GenericSuccess(`DELETE /deleteResolutionById  ${_id}`);
-    } catch (error) {
-      res.status(500).json({ message: error });
-      GenericError(`DELETE /deleteResolutionById   ${error}`);
+exports.deleteResolutionById = async (req, res) => {
+  try {
+    const _id = req.params.id;
+    const post = await Post.findOne({ proposedResolutions: _id });
+    if (!post) {
+      return res.status(404).send();
     }
-  }
-);
+    const update = { $pull: { proposedResolutions: _id } };
+    await post.updateOne(update);
 
-//get one resolution by id and update it
-router.put("/resolution/updateResolutionById/:id", auth, async (req, res) => {
+    const proposedResolution = await Post.findOneAndDelete({ _id });
+    if (!proposedResolution) {
+      return res.status(404).send();
+    }
+
+    res.send({ message: `Resolution deleted` });
+    GenericSuccess(`DELETE /deleteResolutionById  ${_id}`);
+  } catch (error) {
+    res.status(500).json({ message: error });
+    GenericError(`DELETE /deleteResolutionById   ${error}`);
+  }
+};
+
+exports.updateResolutionById = async (req, res) => {
   const toUpdate = Object.keys(req.body);
   const canUpdate = ["description", "status"];
   const isValid = toUpdate.every((fieldToUpdate) =>
@@ -136,10 +124,9 @@ router.put("/resolution/updateResolutionById/:id", auth, async (req, res) => {
     res.status(500).json({ error: "Error while updating resolution" });
     GenericError(`PUT /updateResolutionById   ${error}`);
   }
-});
+};
 
-// Accept a proposed resolution and mark the others as rejected
-router.put("/resolution/:id/accept", auth, async (req, res) => {
+exports.acceptResolutionById = async (req, res) => {
   try {
     const resolutionId = req.params.id;
     const resolution = await ProposedResolution.findByIdAndUpdate(
@@ -165,10 +152,9 @@ router.put("/resolution/:id/accept", auth, async (req, res) => {
     res.status(500).json({ error: "Error while accepting resolution" });
     GenericError(`PUT resolution/accept   ${error}`);
   }
-});
+};
 
-// Endpoint per rifiutare una proposta
-router.put("/resolution/:id/reject", auth, async (req, res) => {
+exports.rejectResolutionById = async (req, res) => {
   try {
     const resolutionId = req.params.id;
     await ProposedResolution.findByIdAndUpdate(
@@ -184,6 +170,4 @@ router.put("/resolution/:id/reject", auth, async (req, res) => {
     res.status(500).json({ error: "Error while rejecting resolution" });
     GenericError(`PUT resolution/rejected   ${error}`);
   }
-});
-
-module.exports = router;
+};

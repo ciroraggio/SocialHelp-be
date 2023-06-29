@@ -1,26 +1,7 @@
-const express = require("express");
-const multer = require("multer");
-const {
-  GenericError,
-  GenericSuccess,
-  throwError,
-} = require("../../utils/LoggerUtils");
+const { GenericSuccess, GenericError } = require("../../utils/LoggerUtils");
 const User = require("../models/user");
-const router = new express.Router();
-const auth = require("../middleware/auth");
-const upload = multer({
-  limits: {
-    fileSize: 1000000, //1 mb
-  },
-  fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(jpeg|jpg|png)/)) {
-      cb(new Error("File must be .jpg/.jpeg/.png"));
-    }
-    cb(undefined, true);
-  },
-});
 
-router.post("/login", async (req, res) => {
+exports.login = async (req, res) => {
   try {
     const user = await User.findByCredentials(
       req.body.username,
@@ -38,9 +19,9 @@ router.post("/login", async (req, res) => {
     res.status(400).json({ message: error });
     GenericError(`POST /login  ${error}`);
   }
-});
+};
 
-router.post("/logout", auth, async (req, res) => {
+exports.logout = async (req, res) => {
   try {
     req.user.tokens = req.user.tokens.filter(
       (token) => token.token !== req.token
@@ -52,9 +33,9 @@ router.post("/logout", auth, async (req, res) => {
     res.status(500).json({ message: error });
     GenericError(`POST /logout  ${error}`);
   }
-});
+};
 
-router.post("/logoutAll", auth, async (req, res) => {
+exports.logoutAll = async (req, res) => {
   try {
     req.user.tokens = [];
     await req.user.save();
@@ -64,9 +45,9 @@ router.post("/logoutAll", auth, async (req, res) => {
     res.status(500).json({ message: error });
     GenericError(`POST /logoutAll  ${error}`);
   }
-});
+};
 
-router.get("/user/getAllUsers", auth, async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find({ _id: { $ne: req.user._id } });
     res.status(200).send(
@@ -80,7 +61,7 @@ router.get("/user/getAllUsers", auth, async (req, res) => {
           biography: user.biography,
           following: user.following.filter((id) => id.toString() !== user._id),
           verified: user.verified,
-          profilePicture: user.profilePicture
+          profilePicture: user.profilePicture,
         };
       })
     );
@@ -89,10 +70,9 @@ router.get("/user/getAllUsers", auth, async (req, res) => {
     res.status(400).json({ message: error });
     GenericError(`GET /getAllUsers  ${error}`);
   }
-});
+};
 
-//create user
-router.post("/user/createUser", async (req, res) => {
+exports.createUser = async (req, res) => {
   const user = new User(req.body);
   try {
     await user.save();
@@ -103,10 +83,9 @@ router.post("/user/createUser", async (req, res) => {
     res.status(400).json({ message: error });
     GenericError(`POST /createUser  ${error}`);
   }
-});
+};
 
-//get user in session
-router.get("/user/getCurrentUser", auth, async (req, res) => {
+exports.getCurrentUser = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (user) {
@@ -119,10 +98,9 @@ router.get("/user/getCurrentUser", auth, async (req, res) => {
     res.status(500).json({ message: error });
     GenericError(`GET /getCurrentUser  ${error}`);
   }
-});
+};
 
-//get user in session and update it
-router.put("/user/updateCurrentUser", auth, async (req, res) => {
+exports.updateCurrentUser = async (req, res) => {
   const toUpdate = Object.keys(req.body);
   const canUpdate = [
     "name",
@@ -153,10 +131,9 @@ router.put("/user/updateCurrentUser", auth, async (req, res) => {
     res.status(400).json({ message: error });
     GenericError(`PUT /updateCurrentUser   ${error}`);
   }
-});
+};
 
-//get user in session and remove it from db
-router.delete("/user/deleteCurrentUser", auth, async (req, res) => {
+exports.deleteCurrentUser = async (req, res) => {
   try {
     await req.user.remove();
     res.send(req.user);
@@ -165,9 +142,9 @@ router.delete("/user/deleteCurrentUser", auth, async (req, res) => {
     res.status(500).json({ message: error });
     GenericError(`GET /deleteCurrentUser   ${error}`);
   }
-});
+};
 
-router.get("/user/getProfilePicture/:id", async (req, res) => {
+exports.getProfilePicture = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user || !user.profilePicture) {
@@ -180,32 +157,28 @@ router.get("/user/getProfilePicture/:id", async (req, res) => {
     res.status(404).send();
     GenericError(`GET /user/getProfilePicture ${err}`);
   }
-});
+};
 
-router.post(
-  "/user/uploadProfilePicture",
-  auth,
-  async (req, res) => {
+exports.uploadProfilePicture = async (req, res) => {
+  try {
     req.user.profilePicture = req.body.data;
     await req.user.save();
     res.status(200).send({ message: "Profile picture updated" });
     GenericSuccess(" POST /user/uploadProfilePicture");
-  },
-  (error, req, res, next) => {
+  } catch (error) {
     res.status(400).send({ error: error.message });
     GenericError(`POST /user/uploadProfilePicture ${err}`);
   }
-);
+};
 
-router.delete("/user/deleteProfilePicture", auth, async (req, res) => {
+exports.deleteProfilePicture = async (req, res) => {
   req.user.profilePicture = undefined;
   await req.user.save();
   res.send();
   GenericSuccess(" DELETE /user/deleteProfilePicture");
-});
+};
 
-// Aggiunge un utente alla lista following
-router.post("/user/follow", auth, async (req, res) => {
+exports.follow = async (req, res) => {
   try {
     const user = req.user;
     const followingId = req.body.followingId;
@@ -223,10 +196,9 @@ router.post("/user/follow", auth, async (req, res) => {
     res.status(500).send({ error: error.message });
     GenericError(`POST /user/follow ${error.message}`);
   }
-});
+};
 
-// Rimuove un utente dalla lista following
-router.post("/user/removeFollow", auth, async (req, res) => {
+exports.removeFollow = async (req, res) => {
   try {
     const followingId = req.body.followingId;
     if (!req.user || !followingId) {
@@ -245,6 +217,5 @@ router.post("/user/removeFollow", auth, async (req, res) => {
     res.status(500).send({ error: error.message });
     GenericError(`POST /user/removeFollow ${error.message}`);
   }
-});
+};
 
-module.exports = router;

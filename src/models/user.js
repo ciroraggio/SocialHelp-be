@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const Post = require("./post");
 const { throwError, GenericError } = require("../../utils/LoggerUtils");
 require("dotenv").config();
-// Hash the password
+
 const userSchema = new mongoose.Schema(
   {
     name: {
